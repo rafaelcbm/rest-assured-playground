@@ -29,11 +29,6 @@ public class HelloWorldRestAssuredTest {
 
 	@Test
 	public void helloWorldRestAssuredFluentWay() {
-		Response response = RestAssured.request(Method.GET, "http://restapi.wcaquino.me/ola");
-		
-		ValidatableResponse validatableResponse = response.then();
-		validatableResponse.statusCode(200);	
-		
 		// Preparation
 		given()
 		// Action
