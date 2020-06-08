@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.restassured.RestAssured;
@@ -17,13 +18,20 @@ import io.restassured.response.Response;
 
 public class UsersJsonTest {
 	
+	@BeforeClass
+	public static void setup() {
+		RestAssured.baseURI="http://restapi.wcaquino.me";
+//		RestAssured.port="443";
+//		RestAssured.basePath=""; 
+	}
+	
 	@Test
 	public void bodyTest() {
 		// Preparation
 		given()
 		// Action
 		.when()
-			.get("http://restapi.wcaquino.me/ola")
+			.get("/ola")
 		// Verification
 		.then()
 			.statusCode(200)
@@ -38,7 +46,7 @@ public class UsersJsonTest {
 		given()
 		// Action
 		.when()
-			.get("http://restapi.wcaquino.me/users/1")
+			.get("/users/1")
 		// Verification
 		.then()
 			.statusCode(200)
@@ -70,7 +78,7 @@ public class UsersJsonTest {
 		given()
 		// Action
 		.when()
-			.get("http://restapi.wcaquino.me/users/2")
+			.get("/users/2")
 		// Verification
 		.then()
 			.statusCode(200)
@@ -85,7 +93,7 @@ public class UsersJsonTest {
 		given()
 		// Action
 		.when()
-			.get("http://restapi.wcaquino.me/users/3")
+			.get("/users/3")
 		// Verification
 		.then()
 			.statusCode(200)
@@ -106,7 +114,7 @@ public class UsersJsonTest {
 		given()
 		// Action
 		.when()
-			.get("http://restapi.wcaquino.me/users")
+			.get("/users")
 		// Verification
 		.then()
 			.statusCode(200)
@@ -126,7 +134,7 @@ public class UsersJsonTest {
 		given()
 		// Action
 		.when()
-			.get("http://restapi.wcaquino.me/users/4")
+			.get("/users/4")
 		// Verification
 		.then()
 			.statusCode(404)
@@ -140,7 +148,7 @@ public class UsersJsonTest {
 		given()
 		// Action
 		.when()
-			.get("http://restapi.wcaquino.me/users")
+			.get("/users")
 		// Verification
 		.then()
 			.statusCode(200)
@@ -180,7 +188,7 @@ public class UsersJsonTest {
 		ArrayList<String> names = 
 		given()
 		.when()
-			.get("http://restapi.wcaquino.me/users")
+			.get("/users")
 		.then()
 			.statusCode(200)
 			// both Matchers conditions

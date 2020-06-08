@@ -6,20 +6,26 @@ import static org.hamcrest.Matchers.*;
 import java.util.ArrayList;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.restassured.RestAssured;
 import io.restassured.internal.path.xml.NodeImpl;
 
 public class UsersXmlTest {
 	
+	@BeforeClass
+	public static void setup() {
+		RestAssured.baseURI="http://restapi.wcaquino.me";
+//		RestAssured.port="443";
+//		RestAssured.basePath=""; 
+	}
+	
 	@Test
 	public void workingWithXmlTest() {
-		// Preparation
 		given()
-		// Action
 		.when()
-			.get("http://restapi.wcaquino.me/usersXML/3")
-		// Verification
+			.get("/usersXML/3")
 		.then()
 			.statusCode(200)
 			.body("user.name", is("Ana Julia"))
@@ -35,12 +41,9 @@ public class UsersXmlTest {
 	
 	@Test
 	public void workingWithXmlUsingRootPathTest() {
-		// Preparation
 		given()
-		// Action
 		.when()
-			.get("http://restapi.wcaquino.me/usersXML/3")
-		// Verification
+			.get("/usersXML/3")
 		.then()
 			.statusCode(200)
 			
@@ -67,12 +70,9 @@ public class UsersXmlTest {
 	
 	@Test
 	public void shouldDoAdvancedXmlSearchTest() {
-		// Preparation
 		given()
-		// Action
 		.when()
-			.get("http://restapi.wcaquino.me/usersXML")
-		// Verification
+			.get("/usersXML")
 		.then()
 			.statusCode(200)			
 			.body("users.user.size()", is(3))
@@ -92,7 +92,7 @@ public class UsersXmlTest {
 		ArrayList<NodeImpl> names =
 		given()
 		.when()
-			.get("http://restapi.wcaquino.me/usersXML")
+			.get("/usersXML")
 		.then()
 			.statusCode(200)			
 			.extract()
@@ -110,7 +110,7 @@ public class UsersXmlTest {
 		
 		given()
 		.when()
-			.get("http://restapi.wcaquino.me/usersXML")
+			.get("/usersXML")
 		.then()
 			.statusCode(200)
 			.body(hasXPath("count(/users/user)", is("3")))			
