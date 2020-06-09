@@ -110,5 +110,55 @@ public class HttpVerbsTest {
 			.body("user.age", is("50"))
 			;
 	}
+	
+	@Test
+	public void shouldPutDataTest() {
+		// Preparation
+		given()	
+			.contentType("application/json")
+			.body("{\n" + 
+					"    \"name\":\"Jason\",\n" + 
+					"    \"age\":80\n" + 
+					"}")
+		// Action
+		.when()
+			.put("/users/1")
+		// Verification
+		.then()
+			.log().all()
+			.statusCode(200)
+			.body("id", is(1))
+			.body("name", is("Jason"))
+			.body("age", is(80))
+			.body("salary", is(1234.5678f))
+			;
+	}
+	
+	@Test
+	public void shouldCustomizeUrlTest() {
+		// Preparation
+		given()	
+			.contentType("application/json")
+			.body("{\n" + 
+					"    \"name\":\"Jason\",\n" + 
+					"    \"age\":80\n" + 
+					"}")
+			.pathParam("resourceName", "users")
+			.pathParam("resourceId", 1)
+		// Action
+		.when()
+			.put("/{resourceName}/{resourceId}", "users", 1)
+		//Other way to pass params
+			//.put("/{resourceName}/{resourceId}", "users", 1)
+		// Verification
+		.then()
+			.log().all()
+			.statusCode(200)
+			.body("id", is(1))
+			.body("name", is("Jason"))
+			.body("age", is(80))
+			.body("salary", is(1234.5678f))
+			;
+	}
 
 }
