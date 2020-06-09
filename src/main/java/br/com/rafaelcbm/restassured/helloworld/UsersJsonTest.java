@@ -12,23 +12,43 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.http.Method;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
 
 public class UsersJsonTest {
+		
+	public static RequestSpecification reqSpec;
+	public static ResponseSpecification resSpec;
 	
 	@BeforeClass
 	public static void setup() {
 		RestAssured.baseURI="http://restapi.wcaquino.me";
 //		RestAssured.port="443";
-//		RestAssured.basePath=""; 
+//		RestAssured.basePath="";
+				
+		RequestSpecBuilder reqBuilder = new RequestSpecBuilder();
+		reqBuilder.log(LogDetail.ALL);
+		reqSpec = reqBuilder.build();
+
+		ResponseSpecBuilder resBuilder = new ResponseSpecBuilder();
+		resBuilder.expectStatusCode(200);
+		resSpec = resBuilder.build();
+
+		// Adding Global Specification
+//		RestAssured.requestSpecification = reqSpec;
+//		RestAssured.responseSpecification = resSpec;
 	}
 	
 	@Test
 	public void bodyTest() {
 		// Preparation
-		given()
+		given()			
 		// Action
 		.when()
 			.get("/ola")
@@ -198,5 +218,21 @@ public class UsersJsonTest {
 		Assert.assertTrue(names.get(0).equalsIgnoreCase("mAria JoaquiNa"));
 		Assert.assertEquals(names.get(0).toUpperCase(), "MARIA JOAQUINA");
 		
+	}
+	
+	@Test
+	public void usingRequestResponseSpecificationTest() {
+		// Preparation
+		given()			
+			.spec(reqSpec) // Log
+		// Action
+		.when()
+			.get("/ola")
+		// Verification
+		.then()
+			.spec(resSpec) // Expect status code 200
+			.body(is("Ola Mundo!"))
+			.body(containsString("Mundo"))
+			.body(is(not(nullValue())));
 	}
 }
