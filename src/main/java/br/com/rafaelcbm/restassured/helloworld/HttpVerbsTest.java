@@ -2,13 +2,7 @@ package br.com.rafaelcbm.restassured.helloworld;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import org.hamcrest.core.IsNot;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -17,9 +11,6 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
-import io.restassured.http.Method;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 
@@ -49,17 +40,14 @@ public class HttpVerbsTest {
 	
 	@Test
 	public void shouldPostDataTest() {
-		// Preparation
 		given()	
 			.contentType("application/json")
 			.body("{\n" + 
 					"    \"name\":\"Jose\",\n" + 
 					"    \"age\":50\n" + 
 					"}")
-		// Action
 		.when()
 			.post("/users")
-		// Verification
 		.then()
 			.log().all()
 			.statusCode(201)
@@ -71,16 +59,13 @@ public class HttpVerbsTest {
 	
 	@Test
 	public void shouldNotPostInvalidDataTest() {
-		// Preparation
 		given()	
 			.contentType("application/json")
 			.body("{\n" +
 					"    \"age\":50\n" + 
 					"}")
-		// Action
 		.when()
 			.post("/users")
-		// Verification
 		.then()
 			.log().all()
 			.statusCode(400)
@@ -91,17 +76,14 @@ public class HttpVerbsTest {
 	
 	@Test
 	public void shouldPostXmlDataTest() {
-		// Preparation
 		given()	
 			.contentType(ContentType.XML) // using enum
 			.body("<user>\n" + 
 					"<name>Jose</name>\n" + 
 					"<age>50</age>\n" +					 
 					"</user>")
-		// Action
 		.when()
 			.post("/usersXml")
-		// Verification
 		.then()
 			.log().all()
 			.statusCode(201)
@@ -113,17 +95,14 @@ public class HttpVerbsTest {
 	
 	@Test
 	public void shouldPutDataTest() {
-		// Preparation
 		given()	
 			.contentType("application/json")
 			.body("{\n" + 
 					"    \"name\":\"Jason\",\n" + 
 					"    \"age\":80\n" + 
 					"}")
-		// Action
 		.when()
 			.put("/users/1")
-		// Verification
 		.then()
 			.log().all()
 			.statusCode(200)
@@ -136,7 +115,6 @@ public class HttpVerbsTest {
 	
 	@Test
 	public void shouldCustomizeUrlTest() {
-		// Preparation
 		given()	
 			.contentType("application/json")
 			.body("{\n" + 
@@ -145,12 +123,10 @@ public class HttpVerbsTest {
 					"}")
 			.pathParam("resourceName", "users")
 			.pathParam("resourceId", 1)
-		// Action
 		.when()
 			.put("/{resourceName}/{resourceId}", "users", 1)
 		//Other way to pass params
 			//.put("/{resourceName}/{resourceId}", "users", 1)
-		// Verification
 		.then()
 			.log().all()
 			.statusCode(200)
@@ -159,6 +135,29 @@ public class HttpVerbsTest {
 			.body("age", is(80))
 			.body("salary", is(1234.5678f))
 			;
+	}
+	
+	@Test
+	public void shouldDeleteTest() {
+		given()				
+		.when()
+			.delete("/users/1")
+		.then()
+			.log().all()
+			.statusCode(204)
+			;
+	}
+	
+	@Test
+	public void shouldNotDeleteInvalidIdTest() {
+		given()				
+		.when()
+			.delete("/users/10000")
+		.then()
+			.log().all()
+			.statusCode(400)
+			.body("error", is("Registro inexistente"))
+		;
 	}
 
 }
