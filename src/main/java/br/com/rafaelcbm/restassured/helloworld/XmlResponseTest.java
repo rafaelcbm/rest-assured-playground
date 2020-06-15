@@ -12,7 +12,7 @@ import org.junit.Test;
 import io.restassured.RestAssured;
 import io.restassured.internal.path.xml.NodeImpl;
 
-public class UsersXmlTest {
+public class XmlResponseTest {
 	
 	@BeforeClass
 	public static void setup() {
