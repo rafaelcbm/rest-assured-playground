@@ -11,6 +11,8 @@ import java.util.Map;
 import org.junit.Test;
 
 import io.restassured.http.ContentType;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.XmlPath.CompatibilityMode;
 
 public class AuthTest {
 		
@@ -133,5 +135,44 @@ public class AuthTest {
 			.statusCode(200)
 			.body("nome", hasItem("Conta com movimentacao"))
 		;		
+	}
+	
+	@Test
+	public void shouldAccessWebAppViaSessionCookieTest() {
+		
+		// login
+		String cookie = given()			
+			.log().all()
+			.formParam("email", "rafaelcbm@gmail.com")
+			.formParam("senha", "rafael654321")
+			.contentType(ContentType.URLENC.withCharset("UTF-8"))
+		.when()
+			.post("http://seubarriga.wcaquino.me/logar")
+		.then()
+			.log().all()
+			.statusCode(200)
+			.extract().header("set-cookie")
+		;
+		
+		cookie = cookie.split("=")[1].split(";")[0];		
+		System.out.println("*** cookie = " + cookie);
+		
+		// call api
+		String body = given()			
+			.log().all()
+			.cookie("connect.sid", cookie)			
+		.when()
+			.get("http://seubarriga.wcaquino.me/contas")
+		.then()
+			.log().all()
+			.statusCode(200)
+			.body("html.body.table.tbody.tr[0].td[0]", is("Conta alterada2"))
+			.extract().body().asString();
+		;
+		
+		XmlPath xmlPath = new XmlPath(CompatibilityMode.HTML, body);
+		String contaNameExtracted = xmlPath.getString("html.body.table.tbody.tr[0].td[0]");
+		System.out.println("*** contaNameExtracted = " + contaNameExtracted);
+		
 	}
 }
