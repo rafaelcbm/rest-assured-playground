@@ -3,26 +3,35 @@ package br.com.rafaelcbm.restassured.webapp;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import br.com.rafaelcbm.restassured.webapp.core.BaseTest;
+import io.restassured.RestAssured;
+import io.restassured.specification.FilterableRequestSpecification;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WebAppApiTest extends BaseTest {
 
-	private String token;
+	private static String CONTA_NAME = "Conta" + System.nanoTime();
+	private static Integer CONTA_ID;
+	private static Integer MOV_ID;
 	
-	@Before
-	public void login() {
+	@BeforeClass
+	public static void login() {
 		// Login
 		Map<String, String> login = new HashMap<String, String>();
 		login.put("email", "rafaelcbm@gmail.com");
 		login.put("senha", "rafael654321");
 
-		token = 
+		String token = 
 		given()
 			.body(login)
 		.when()
@@ -30,76 +39,71 @@ public class WebAppApiTest extends BaseTest {
 		.then()
 			.statusCode(200)
 			.extract().path("token");
-	}
-
-	
-	@Test
-	public void shouldNotAccessWithoutTokenTest() {
-		given().when().get("/contas").then().statusCode(401);
+		
+		// (Bearer auth)
+		RestAssured.requestSpecification.header("Authorization", "JWT "+ token);
 	}
 
 	@Test
-	public void shouldInsertContaTest() {
+	public void t01_shouldInsertContaTest() {
 
 		// API Call
-		given()
-			.header("Authorization", "JWT "+ token)  // Bearer auth
-			.body("{\"nome\":\"conta qualquer\"}")
+		CONTA_ID = given()
+			.body("{\"nome\": \""+CONTA_NAME+"\"}")
 		.when()
 			.post("/contas")
 		.then()
-			.statusCode(201);
-	}
-	
-	@Test
-	public void shouldUpdateContaTest() {
-
-		// API Call
-		given()
-			.header("Authorization", "JWT "+ token)
-			.body("{\"nome\":\"conta alterada\"}")
-		.when()
-			.put("/contas/185843")
-		.then()
-			.statusCode(200)
-			.body("nome", is("conta alterada"))
+			.statusCode(201)
+			.extract().path("id")
 		;
 	}
 	
 	@Test
-	public void shouldNotInsertContaWithSameNameTest() {
+	public void t02_shouldUpdateContaTest() {
 
-		// API Call
 		given()
-			.header("Authorization", "JWT "+ token)  // Bearer auth
-			.body("{\"nome\":\"conta alterada\"}")
+			.body("{\"nome\": \""+CONTA_NAME+" alterada\"}")
+			.pathParam("id", CONTA_ID)
+		.when()
+			.put("/contas/{id}")
+		.then()
+			.statusCode(200)
+			.body("nome", is(CONTA_NAME + " alterada"))
+		;
+	}
+	
+	@Test
+	public void t03_shouldNotInsertContaWithSameNameTest() {
+
+		given()
+		.body("{\"nome\": \""+CONTA_NAME+" alterada\"}")
 		.when()
 			.post("/contas")
 		.then()
 			.statusCode(400)
 			.body("error", is("Já existe uma conta com esse nome!"))
-			;
+		;
 	}
 	
 	@Test
-	public void shouldInsertMovimentacaoTest() {
+	public void t04_shouldInsertMovimentacaoTest() {
 
 		Movimentacao mov = getValidMovimentacao();
 		
-		given()
-			.header("Authorization", "JWT "+ token)
+		MOV_ID = given()
 			.body(mov)
 		.when()
 			.post("/transacoes")
 		.then()
-			.statusCode(201);
+			.statusCode(201)
+			.extract().path("id")
+		;
 	}
 	
 	@Test
-	public void shouldValidateRequiredFiledsTest() {
+	public void t05_shouldValidateRequiredFiledsTest() {
 		
 		given()
-			.header("Authorization", "JWT "+ token)
 			.body("{}")
 		.when()
 			.post("/transacoes")
@@ -119,14 +123,18 @@ public class WebAppApiTest extends BaseTest {
 		;
 	}
 	
+	// ESSE FOI O ULTIMO da refatoração
 	@Test
-	public void shouldNotInsertMovimentacaoFuturaTest2() {
+	public void t06_shouldNotInsertMovimentacaoFuturaTest2() {
 
+		LocalDate localDate = LocalDate.now().plusDays(1);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		String formattedDate = localDate.format(formatter);
+		
 		Movimentacao mov = getValidMovimentacao();
-		mov.setData_transacao("12/12/2020");
+		mov.setData_transacao(formattedDate);
 		
 		given()
-			.header("Authorization", "JWT "+ token)
 			.body(mov)
 		.when()
 			.post("/transacoes")
@@ -137,15 +145,15 @@ public class WebAppApiTest extends BaseTest {
 	}
 	
 	@Test
-	public void shouldNotDeleteContaWithMovimentacaoTest() {
+	public void t07_shouldNotDeleteContaWithMovimentacaoTest() {
 		
-		Movimentacao mov = getValidMovimentacao();
-		mov.setData_transacao("12/12/2020");
+		System.out.println("*** t07_shouldNotDeleteContaWithMovimentacaoTest");
+		System.out.println("CONTA_ID = "+CONTA_ID);
 		
 		given()
-			.header("Authorization", "JWT "+ token)			
+			.pathParam("id", CONTA_ID)
 		.when()
-			.delete("/contas/185843")
+			.delete("/contas/{id}")
 		.then()
 			.statusCode(500) // Internal server error
 			.body("constraint", is("transacoes_conta_id_foreign"))
@@ -153,10 +161,9 @@ public class WebAppApiTest extends BaseTest {
 	}
 	
 	@Test
-	public void shouldCalculateBalanceContasTest() {
+	public void t08_shouldCalculateBalanceContasTest() {
 		
 		given()
-			.header("Authorization", "JWT "+ token)			
 		.when()
 			.get("/saldo")
 		.then()
@@ -166,25 +173,44 @@ public class WebAppApiTest extends BaseTest {
 	}
 
 	@Test
-	public void shouldDeleteMovimentacaoTest() {
+	public void t09_shouldDeleteMovimentacaoTest() {
 		
 		given()
-			.header("Authorization", "JWT "+ token)			
+			.pathParam("id", MOV_ID)
 		.when()
-			.delete("/transacoes/164642")
+			.delete("/transacoes/{id}")
 		.then()
 			.statusCode(204)
 		;
 	}
 	
+	@Test
+	public void t10_shouldNotAccessWithoutTokenTest() {
+		
+		FilterableRequestSpecification reqSpec=(FilterableRequestSpecification) RestAssured.requestSpecification;
+		reqSpec.removeHeader("Authorization");
+		
+		given()
+		.when()
+			.get("/contas")
+		.then()
+			.statusCode(401);
+	}
+	
 	private Movimentacao getValidMovimentacao() {
+		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		
+		String formattedDate1 = LocalDate.now().minusDays(1).format(formatter);				
+		String formattedDate2 = LocalDate.now().plusDays(2).format(formatter);
+		
 		Movimentacao mov = new Movimentacao();
-		mov.setConta_id(185843);
+		mov.setConta_id(CONTA_ID);
 		mov.setDescricao("Descricao da mov");
 		mov.setEnvolvido("Envolvido da mov");
 		mov.setTipo("REC");
-		mov.setData_transacao("01/01/2020");
-		mov.setData_pagamento("10/05/2020");
+		mov.setData_transacao(formattedDate1);
+		mov.setData_pagamento(formattedDate2);
 		mov.setValor(100f);
 		mov.setStatus(true);
 		
