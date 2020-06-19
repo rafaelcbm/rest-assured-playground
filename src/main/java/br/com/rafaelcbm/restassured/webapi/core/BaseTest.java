@@ -1,4 +1,4 @@
-package br.com.rafaelcbm.restassured.webapp.core;
+package br.com.rafaelcbm.restassured.webapi.core;
 
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;

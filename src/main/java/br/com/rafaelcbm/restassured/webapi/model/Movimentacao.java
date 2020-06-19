@@ -1,4 +1,4 @@
-package br.com.rafaelcbm.restassured.webapp;
+package br.com.rafaelcbm.restassured.webapi.model;
 
 public class Movimentacao  {
 

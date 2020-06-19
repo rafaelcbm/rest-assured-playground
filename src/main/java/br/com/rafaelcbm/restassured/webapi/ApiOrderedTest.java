@@ -1,7 +1,10 @@
-package br.com.rafaelcbm.restassured.webapp;
+package br.com.rafaelcbm.restassured.webapi;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -13,12 +16,13 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import br.com.rafaelcbm.restassured.webapp.core.BaseTest;
+import br.com.rafaelcbm.restassured.webapi.core.BaseTest;
+import br.com.rafaelcbm.restassured.webapi.model.Movimentacao;
 import io.restassured.RestAssured;
 import io.restassured.specification.FilterableRequestSpecification;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class WebAppApiTest extends BaseTest {
+public class ApiOrderedTest extends BaseTest {
 
 	private static String CONTA_NAME = "Conta" + System.nanoTime();
 	private static Integer CONTA_ID;
@@ -123,9 +127,8 @@ public class WebAppApiTest extends BaseTest {
 		;
 	}
 	
-	// ESSE FOI O ULTIMO da refatoração
 	@Test
-	public void t06_shouldNotInsertMovimentacaoFuturaTest2() {
+	public void t06_shouldNotInsertMovimentacaoFuturaTest() {
 
 		LocalDate localDate = LocalDate.now().plusDays(1);
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -147,9 +150,6 @@ public class WebAppApiTest extends BaseTest {
 	@Test
 	public void t07_shouldNotDeleteContaWithMovimentacaoTest() {
 		
-		System.out.println("*** t07_shouldNotDeleteContaWithMovimentacaoTest");
-		System.out.println("CONTA_ID = "+CONTA_ID);
-		
 		given()
 			.pathParam("id", CONTA_ID)
 		.when()
@@ -168,7 +168,7 @@ public class WebAppApiTest extends BaseTest {
 			.get("/saldo")
 		.then()
 			.statusCode(200)
-			.body("find{it.conta_id == 185843}.saldo", is("100.00"))
+			.body("find{it.conta_id == "+CONTA_ID+"}.saldo", is("100.00"))
 		;
 	}
 
